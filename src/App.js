@@ -18,15 +18,17 @@ import React from 'react';
 const queryClient = new QueryClient()
 
 const App = () => {
-
+const isDarkMode = false;
 
   return (
-    <SafeAreaView style={backgroundStyle}>
+    <>
+    <SafeAreaView style={{flexGrow:1}}>
       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
       <QueryClientProvider client={queryClient}>
         <AppStack />
       </QueryClientProvider>
-    </SafeAreaView>
+      </SafeAreaView>
+    </>
   );
 };
 

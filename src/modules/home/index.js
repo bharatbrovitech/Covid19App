@@ -1,20 +1,41 @@
-import React, { useEffect, useState } from 'react'
-import { StyleSheet, View } from 'react-native'
+import React, { useEffect, useState ,useCallback} from 'react'
+import { StyleSheet, View, Text ,FlatList, Pressable } from 'react-native'
+import { getTopCountriesAndGlobalCasesApiCall } from '../../apis/Covid.service'
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
+        flexGrow: 1,
         backgroundColor: '#fff',
         alignItems: 'center',
         justifyContent: 'center',
     },
     text: {}
 })
-const HomeScreen = () => {
+const HomeScreen = ({navigation}) => {
     const [topCountries, setTopCountries] = useState([])
     const [globalData, setGlobalData] = useState(undefined)
+
+    useEffect(async()=> {
+       const globalData =  await getTopCountriesAndGlobalCasesApiCall();
+       setTopCountries(globalData.topCountriesCases);
+       setGlobalData(globalData.globalCases)
+    }, [])
+
+    const renderTopCovidCountries=({item})=>{
+        return (
+            <Pressable onPress={()=>navigation.navigate("CountryListScreen")}>
+                <Text>{item?.Country}</Text>
+            </Pressable>
+        )
+    }
+
     return (
         <View style={styles.container}>
-            <h1>Home</h1>
+          <FlatList 
+            data={topCountries}
+            extraData={topCountries}
+            renderItem={renderTopCovidCountries}
+            keyExtractor={(item)=>item.ID}
+          />
         </View>
     )
 }
