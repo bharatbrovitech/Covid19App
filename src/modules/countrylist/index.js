@@ -1,18 +1,90 @@
-import { Text, View ,StyleSheet} from 'react-native'
+import { Text, View ,StyleSheet,FlatList, Modal} from 'react-native'
 
-import React from 'react'
+import React,{useEffect,useState} from 'react'
+import { getCovidSummaryApiCall } from '../../apis/Covid.service'
+import Pressable from 'react-native/Libraries/Components/Pressable/Pressable'
+import { sortArray } from '../../utils'
+import { CountriesDetails } from '../../components/UI/CountriesDetails'
+import { SortModal } from '../../components/UI/sortByModal'
 
+
+const CountryListScreen = () => {
+    const [countriesData, setCountriesData] = useState([])
+    const [showSortModal, setShowSortModal] = useState(false)
+    useEffect(() => {
+        getCovidSummaryApiCall().then(result=>setCountriesData(result.Countries))
+       
+    }, [])
+
+    const sortData=(sortBy)=>{
+        const sortedCountries = sortArray(countriesData,sortBy);
+        setCountriesData([...sortedCountries])
+        setShowSortModal(false)
+    }
+
+    const renderCountriesReport=({item})=>{
+        return (
+            <View style={styles.listContainer}>
+                <Text style={{marginBottom:5,fontWeight:"900"}}>{item?.Country}</Text>
+                <CountriesDetails total={item?.TotalConfirmed} today={item?.NewConfirmed} title="Confirmed"/>
+                <CountriesDetails total={item?.TotalDeaths} today={item?.NewDeaths} title="Deaths"/>
+                <CountriesDetails total={item?.TotalRecovered} today={item?.NewRecovered} title="Recovered"/>
+            </View>
+        )
+    }
+    return <View style={styles.container}>
+
+        <Pressable onPress={()=>setShowSortModal(true)} style={{alignSelf:"flex-end"}}><Text style={{fontWeight:'500',fontSize:17,color:"rgb(64,68,114)",marginBottom:10}}>Sort By</Text></Pressable>   
+        <FlatList 
+        data={ countriesData}
+        extraData={ countriesData}
+        renderItem={renderCountriesReport}
+        keyExtractor={(item)=>item.ID}
+        />
+        <SortModal show={showSortModal}>
+            <View >
+                <View style={{flexDirection:"row",justifyContent:"space-between"}}>
+                <Text style={{fontWeight:'500',fontSize:20 , marginBottom:15}} >Sort By</Text>
+                <Text style={{fontWeight:'500',fontSize:20 , marginBottom:15}} onPress={()=>setShowSortModal(false)}>Close</Text>
+                
+                </View>
+            
+            <Pressable onPress={()=>sortData("TotalDeaths")}><Text style={styles.sortType}>Total Deaths</Text></Pressable>
+            <Pressable onPress={()=>sortData("NewDeaths")}><Text style={styles.sortType}>New Deaths</Text></Pressable>
+            <Pressable onPress={()=>sortData("TotalConfirmed")}><Text style={styles.sortType}>Total Confirmed</Text></Pressable>
+            <Pressable onPress={()=>sortData("NewConfirmed")}><Text style={styles.sortType}>New Confirmed</Text></Pressable>
+            <Pressable onPress={()=>sortData("TotalRecovered")}><Text style={styles.sortType}>Total Recovered</Text></Pressable>
+            <Pressable onPress={()=>sortData("NewRecovered")}><Text style={styles.sortType}>New Recovered</Text></Pressable>
+            
+       </View>
+           </SortModal>
+  </View>
+}
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
-        alignItems: 'center',
-        justifyContent: 'center',
+        backgroundColor: 'rgb(246,248,254)',
+        padding:20,
+    },
+    listContainer:{
+        backgroundColor:"#fff",
+        marginBottom:15,
+        padding:10,
+        paddingVertical:20,
+        borderRadius:10,
+        shadowColor: "rgba(0,0,0,0.5)",
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        elevation: 5
+    },
+    sortType:{
+        fontWeight:'500',
+        fontSize:17,
+        color:"rgb(64,68,114)"
     }
 })
-const CountryListScreen = () => {
-    return <View style={styles.container}><Text>
-        {'CountryList'}
-    </Text></View>
-}
 export default CountryListScreen;
